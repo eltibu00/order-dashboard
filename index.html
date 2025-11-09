@@ -787,12 +787,66 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script>
+        // GOOGLE SHEETS CONFIGURATION
+        const SHEET_ID = '1q8PCdPNaVUrC8XHVMt7fL0IYrPpBVX48RxyiM-dcu8Y';
+        const SHEET_NAME = 'Speed Daily Report';
+
         let globalData = [];
         let slaConfig = {
             'ECOM': 0.5,  // 12 hours (same day if by 2pm)
             'BAM': 2,     // 48 hours
             'BAM3': 2,    // 48 hours
+            'KA': 1,      // 24 hours
+            'KA3': 1      // 24 hours
+        };
+
+        // AUTO-LOAD data from Google Sheets on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            autoLoadFromGoogleSheets();
+        });
+
+        async function autoLoadFromGoogleSheets() {
+            try {
+                const fileInfo = document.getElementById('fileInfo');
+                fileInfo.style.display = 'block';
+                fileInfo.innerHTML = '<strong>Loading:</strong> Fetching data from Google Sheets...';
+
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Google Sheets data');
+                }
+                
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        processData(results.data);
+                        fileInfo.innerHTML = `<strong>✓ Auto-loaded from Google Sheets:</strong> Loaded ${results.data.length} orders`;
+                        fileInfo.style.background = '#c6f6d5';
+                        document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+                    },
+                    error: (error) => {
+                        console.error('Error parsing CSV:', error);
+                        fileInfo.innerHTML = '<strong>✗ Error loading from Google Sheets.</strong> You can still upload manually.';
+                        fileInfo.style.background = '#fed7d7';
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading from Google Sheets:', error);
+                const fileInfo = document.getElementById('fileInfo');
+                fileInfo.style.display = 'block';
+                fileInfo.innerHTML = '<strong>✗ Error loading from Google Sheets.</strong> You can still upload manually.';
+                fileInfo.style.background = '#fed7d7';
+            }
+        }
             'KA': 1,      // 24 hours
             'KA3': 1      // 24 hours
         };
