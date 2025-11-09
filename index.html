@@ -1,1 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management Dashboard - Pathways & SLA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stat-card {
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-card .label {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .stat-card.warning .value {
+            color: #ed8936;
+        }
+
+        .stat-card.danger .value {
+            color: #e53e3e;
+        }
+
+        .stat-card.success .value {
+            color: #38a169;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #718096;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: #f7fafc;
+            color: #4a5568;
+        }
+
+        .tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: #f7fafc;
+            transition: all 0.3s;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .file-upload-area input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+
+        .upload-btn:hover {
+            background: #5568d3;
+        }
+
+        .sla-config {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .sla-config h3 {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #2d3748;
+        }
+
+        .sla-config p {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-bottom: 1rem;
+        }
+
+        .sla-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .sla-input-group {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sla-input-group label {
+            font-size: 0.85rem;
+            color: #4a5568;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .sla-input-group .sla-description {
+            font-size: 0.75rem;
+            color: #718096;
+            margin-bottom: 0.75rem;
+        }
+
+        .sla-input-group input {
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        thead {
+            background: #f7fafc;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge.on-time {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge.at-risk {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .badge.overdue {
+            background: #fed7d7;
+            color: #742a2a;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .order-row.overdue {
+            background: #fff5f5;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .order-row.at-risk {
+            background: #fffaf0;
+            border-left: 4px solid #ed8936;
+        }
+
+        .sla-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .sla-indicator.green {
+            background: #38a169;
+        }
+
+        .sla-indicator.yellow {
+            background: #ed8936;
+        }
+
+        .sla-indicator.red {
+            background: #e53e3e;
+        }
+
+        .retailer-card, .status-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .card-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+
+        .card-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-stat .label {
+            color: #718096;
+            font-size: 0.75rem;
+        }
+
+        .card-stat .value {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #718096;
+        }
+
+        .export-btn {
+            background: #48bb78;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .export-btn:hover {
+            background: #38a169;
+        }
+
+        #fileInfo {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #edf2f7;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .pathway-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .pathway-badge.ecom {
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .pathway-badge.bam {
+            background: #ffeee6;
+            color: #cc5200;
+        }
+
+        .pathway-badge.ka {
+            background: #f0e6ff;
+            color: #6600cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📦 Order Management Dashboard - Multi-Pathway SLA Tracking</h1>
+        <p>Real-time monitoring across Ecom, BAM, BAM3, KA, KA3 pathways | Last updated: <span id="lastUpdate">Never</span></p>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="label">Total Orders</div>
+            <div class="value" id="totalOrders">0</div>
+        </div>
+        <div class="stat-card success">
+            <div class="label">On Time</div>
+            <div class="value" id="onTimeOrders">0</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="label">At Risk</div>
+            <div class="value" id="atRiskOrders">0</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="label">Overdue</div>
+            <div class="value" id="overdueOrders">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Total Quantity</div>
+            <div class="value" id="totalQuantity">0</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- SLA Configuration -->
+        <div class="sla-config">
+            <h3>⚙️ SLA Configuration by Pathway</h3>
+            <p>Configure SLA rules for each pathway. Time calculations are based on order create time.</p>
+            <div class="sla-inputs">
+                <div class="sla-input-group">
+                    <label>🚀 Ecom Pathway</label>
+                    <div class="sla-description">Same day if order by 2:00 PM</div>
+                    <input type="number" id="slaEcom" value="0.5" min="0" step="0.1">
+                    <small style="color: #718096;">Days (0.5 = 12 hours)</small>
+                </div>
+                <div class="sla-input-group">
+                    <label>📦 BAM Pathway</label>
+                    <div class="sla-description">48 hours from create time</div>
+                    <input type="number" id="slaBam" value="2" min="0" step="0.1">
+                    <small style="color: #718096;">Days</small>
+                </div>
+                <div class="sla-input-group">
+                    <label>📦 BAM3 Pathway</label>
+                    <div class="sla-description">48 hours from create time</div>
+                    <input type="number" id="slaBam3" value="2" min="0" step="0.1">
+                    <small style="color: #718096;">Days</small>
+                </div>
+                <div class="sla-input-group">
+                    <label>⚡ KA Pathway</label>
+                    <div class="sla-description">24 hours from create time</div>
+                    <input type="number" id="slaKa" value="1" min="0" step="0.1">
+                    <small style="color: #718096;">Days</small>
+                </div>
+                <div class="sla-input-group">
+                    <label>⚡ KA3 Pathway</label>
+                    <div class="sla-description">24 hours from create time</div>
+                    <input type="number" id="slaKa3" value="1" min="0" step="0.1">
+                    <small style="color: #718096;">Days</small>
+                </div>
+            </div>
+            <button class="upload-btn" onclick="recalculateSLA()" style="margin-top: 1rem;">Apply SLA Changes</button>
+        </div>
+
+        <!-- File Upload -->
+        <div class="file-upload-area" id="dropZone">
+            <h3>📁 Drop Your Excel/CSV File Here</h3>
+            <p style="color: #718096; margin-top: 0.5rem;">Upload your order data file to populate the dashboard</p>
+            <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                Choose File
+            </button>
+            <div id="fileInfo"></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('all')">All Orders</button>
+            <button class="tab" onclick="switchTab('ecom')">🚀 Ecom</button>
+            <button class="tab" onclick="switchTab('bam')">📦 BAM</button>
+            <button class="tab" onclick="switchTab('bam3')">📦 BAM3</button>
+            <button class="tab" onclick="switchTab('ka')">⚡ KA</button>
+            <button class="tab" onclick="switchTab('ka3')">⚡ KA3</button>
+            <button class="tab" onclick="switchTab('status')">📊 By Status</button>
+            <button class="tab" onclick="switchTab('retailers')">🏪 By Retailer</button>
+        </div>
+
+        <!-- All Orders Tab -->
+        <div id="all" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>All Orders</h2>
+                <button class="export-btn" onclick="exportToCSV('all')">Export to CSV</button>
+            </div>
+            <div class="filter-section">
+                <input type="text" class="filter-input" placeholder="Search by order #, retailer..." id="searchAll" oninput="filterTable('all')">
+                <select class="filter-input" id="statusFilterAll" onchange="filterTable('all')">
+                    <option value="">All SLA Status</option>
+                    <option value="on-time">On Time</option>
+                    <option value="at-risk">At Risk</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+                <select class="filter-input" id="pathwayFilterAll" onchange="filterTable('all')">
+                    <option value="">All Pathways</option>
+                    <option value="ECOM">Ecom</option>
+                    <option value="BAM">BAM</option>
+                    <option value="BAM3">BAM3</option>
+                    <option value="KA">KA</option>
+                    <option value="KA3">KA3</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Status</th>
+                            <th>Pathway</th>
+                            <th>Create Time</th>
+                            <th>Retailer</th>
+                            <th>Ship To</th>
+                            <th>State</th>
+                            <th>Qty</th>
+                            <th>Time Elapsed</th>
+                            <th>SLA</th>
+                            <th>SLA Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allTable">
+                        <tr>
+                            <td colspan="11" class="no-data">No data loaded. Please upload your file.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Ecom Tab -->
+        <div id="ecom" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>🚀 Ecom Pathway (Same Day if by 2 PM)</h2>
+                <button class="export-btn" onclick="exportToCSV('ecom')">Export to CSV</button>
+            </div>
+            <div class="filter-section">
+                <input type="text" class="filter-input" placeholder="Search..." id="searchEcom" oninput="filterTable('ecom')">
+                <select class="filter-input" id="statusFilterEcom" onchange="filterTable('ecom')">
+                    <option value="">All SLA Status</option>
+                    <option value="on-time">On Time</option>
+                    <option value="at-risk">At Risk</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Status</th>
+                            <th>Create Time</th>
+                            <th>Retailer</th>
+                            <th>Ship To</th>
+                            <th>State</th>
+                            <th>Qty</th>
+                            <th>Time Elapsed</th>
+                            <th>SLA</th>
+                            <th>SLA Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ecomTable">
+                        <tr>
+                            <td colspan="10" class="no-data">No data loaded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BAM Tab -->
+        <div id="bam" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>📦 BAM Pathway (48 Hours)</h2>
+                <button class="export-btn" onclick="exportToCSV('bam')">Export to CSV</button>
+            </div>
+            <div class="filter-section">
+                <input type="text" class="filter-input" placeholder="Search..." id="searchBam" oninput="filterTable('bam')">
+                <select class="filter-input" id="statusFilterBam" onchange="filterTable('bam')">
+                    <option value="">All SLA Status</option>
+                    <option value="on-time">On Time</option>
+                    <option value="at-risk">At Risk</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Status</th>
+                            <th>Create Time</th>
+                            <th>Retailer</th>
+                            <th>Ship To</th>
+                            <th>State</th>
+                            <th>Qty</th>
+                            <th>Time Elapsed</th>
+                            <th>SLA</th>
+                            <th>SLA Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bamTable">
+                        <tr>
+                            <td colspan="10" class="no-data">No data loaded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BAM3 Tab -->
+        <div id="bam3" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>📦 BAM3 Pathway (48 Hours)</h2>
+                <button class="export-btn" onclick="exportToCSV('bam3')">Export to CSV</button>
+            </div>
+            <div class="filter-section">
+                <input type="text" class="filter-input" placeholder="Search..." id="searchBam3" oninput="filterTable('bam3')">
+                <select class="filter-input" id="statusFilterBam3" onchange="filterTable('bam3')">
+                    <option value="">All SLA Status</option>
+                    <option value="on-time">On Time</option>
+                    <option value="at-risk">At Risk</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Status</th>
+                            <th>Create Time</th>
+                            <th>Retailer</th>
+                            <th>Ship To</th>
+                            <th>State</th>
+                            <th>Qty</th>
+                            <th>Time Elapsed</th>
+                            <th>SLA</th>
+                            <th>SLA Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bam3Table">
+                        <tr>
+                            <td colspan="10" class="no-data">No data loaded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- KA Tab -->
+        <div id="ka" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>⚡ KA Pathway (24 Hours)</h2>
+                <button class="export-btn" onclick="exportToCSV('ka')">Export to CSV</button>
+            </div>
+            <div class="filter-section">
+                <input type="text" class="filter-input" placeholder="Search..." id="searchKa" oninput="filterTable('ka')">
+                <select class="filter-input" id="statusFilterKa" onchange="filterTable('ka')">
+                    <option value="">All SLA Status</option>
+                    <option value="on-time">On Time</option>
+                    <option value="at-risk">At Risk</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Status</th>
+                            <th>Create Time</th>
+                            <th>Retailer</th>
+                            <th>Ship To</th>
+                            <th>State</th>
+                            <th>Qty</th>
+                            <th>Time Elapsed</th>
+                            <th>SLA</th>
+                            <th>SLA Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kaTable">
+                        <tr>
+                            <td colspan="10" class="no-data">No data loaded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- KA3 Tab -->
+        <div id="ka3" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>⚡ KA3 Pathway (24 Hours)</h2>
+                <button class="export-btn" onclick="exportToCSV('ka3')">Export to CSV</button>
+            </div>
+            <div class="filter-section">
+                <input type="text" class="filter-input" placeholder="Search..." id="searchKa3" oninput="filterTable('ka3')">
+                <select class="filter-input" id="statusFilterKa3" onchange="filterTable('ka3')">
+                    <option value="">All SLA Status</option>
+                    <option value="on-time">On Time</option>
+                    <option value="at-risk">At Risk</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Status</th>
+                            <th>Create Time</th>
+                            <th>Retailer</th>
+                            <th>Ship To</th>
+                            <th>State</th>
+                            <th>Qty</th>
+                            <th>Time Elapsed</th>
+                            <th>SLA</th>
+                            <th>SLA Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ka3Table">
+                        <tr>
+                            <td colspan="10" class="no-data">No data loaded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Status Grouping Tab -->
+        <div id="status" class="tab-content">
+            <h2>📊 Orders Grouped by Status Code</h2>
+            <div class="filter-section">
+                <input type="text" class="filter-input" placeholder="Search status codes..." id="searchStatus" oninput="filterStatusGroups()">
+            </div>
+            <div id="statusContainer">
+                <div class="no-data">No data loaded. Please upload your file.</div>
+            </div>
+        </div>
+
+        <!-- Retailers Tab -->
+        <div id="retailers" class="tab-content">
+            <h2>🏪 Orders Grouped by Retailer</h2>
+            <div class="filter-section">
+                <input type="text" class="filter-input" placeholder="Search retailers..." id="searchRetailer" oninput="filterRetailers()">
+            </div>
+            <div id="retailersContainer">
+                <div class="no-data">No data loaded. Please upload your file.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        // GOOGLE SHEETS CONFIGURATION
+        const SHEET_ID = '1q8PCdPNaVUrC8XHVMt7fL0IYrPpBVX48RxyiM-dcu8Y';
+        const SHEET_NAME = 'Speed Daily Report';
+
+        let globalData = [];
+        let slaConfig = {
+            'ECOM': 0.5,  // 12 hours (same day if by 2pm)
+            'BAM': 2,     // 48 hours
+            'BAM3': 2,    // 48 hours
+            'KA': 1,      // 24 hours
+            'KA3': 1      // 24 hours
+        };
+
+        // AUTO-LOAD data from Google Sheets on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            autoLoadFromGoogleSheets();
+        });
+
+        async function autoLoadFromGoogleSheets() {
+            try {
+                const fileInfo = document.getElementById('fileInfo');
+                fileInfo.style.display = 'block';
+                fileInfo.innerHTML = '<strong>Loading:</strong> Fetching data from Google Sheets...';
+
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Google Sheets data');
+                }
+                
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        processData(results.data);
+                        fileInfo.innerHTML = `<strong>✓ Auto-loaded from Google Sheets:</strong> Loaded ${results.data.length} orders`;
+                        fileInfo.style.background = '#c6f6d5';
+                        document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+                    },
+                    error: (error) => {
+                        console.error('Error parsing CSV:', error);
+                        fileInfo.innerHTML = '<strong>✗ Error loading from Google Sheets.</strong> You can still upload manually.';
+                        fileInfo.style.background = '#fed7d7';
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading from Google Sheets:', error);
+                const fileInfo = document.getElementById('fileInfo');
+                fileInfo.style.display = 'block';
+                fileInfo.innerHTML = '<strong>✗ Error loading from Google Sheets.</strong> You can still upload manually.';
+                fileInfo.style.background = '#fed7d7';
+            }
+        }
+            'KA': 1,      // 24 hours
+            'KA3': 1      // 24 hours
+        };
+
+        // Function to normalize retailer names - groups similar names together
+        function normalizeRetailerName(retailerName) {
+            if (!retailerName) return 'Unknown';
+            
+            const name = retailerName.toUpperCase().trim();
+            
+            // Amazon variants
+            if (name.includes('AMAZON') || name.includes('AMZN')) {
+                return 'Amazon';
+            }
+            
+            // CVS variants
+            if (name.includes('CVS')) {
+                return 'CVS';
+            }
+            
+            // Walgreens variants
+            if (name.includes('WALGREENS') || name.includes('WAG')) {
+                return 'Walgreens';
+            }
+            
+            // Walmart variants
+            if (name.includes('WALMART') || name.includes('WAL-MART') || name.includes('WMT')) {
+                return 'Walmart';
+            }
+            
+            // Target variants
+            if (name.includes('TARGET') || name.includes('TGT')) {
+                return 'Target';
+            }
+            
+            // Ulta variants
+            if (name.includes('ULTA')) {
+                return 'Ulta';
+            }
+            
+            // Rite Aid variants
+            if (name.includes('RITE AID') || name.includes('RITEAID')) {
+                return 'Rite Aid';
+            }
+            
+            // Kroger variants
+            if (name.includes('KROGER')) {
+                return 'Kroger';
+            }
+            
+            // Costco variants
+            if (name.includes('COSTCO')) {
+                return 'Costco';
+            }
+            
+            // Best Buy variants
+            if (name.includes('BEST BUY') || name.includes('BESTBUY')) {
+                return 'Best Buy';
+            }
+            
+            // If no match, return original name
+            return retailerName;
+        }
+
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Drag and drop
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            const fileInfo = document.getElementById('fileInfo');
+            fileInfo.style.display = 'block';
+            fileInfo.innerHTML = `<strong>Loading:</strong> ${file.name}...`;
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    processData(jsonData);
+                    fileInfo.innerHTML = `<strong>✓ Success:</strong> Loaded ${jsonData.length} orders from ${file.name}`;
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+                } catch (error) {
+                    fileInfo.innerHTML = `<strong>✗ Error:</strong> Failed to parse file. ${error.message}`;
+                    fileInfo.style.background = '#fed7d7';
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processData(data) {
+            // Log first row to help debug column names
+            if (data.length > 0) {
+                console.log('Available columns:', Object.keys(data[0]));
+                console.log('First row sample:', data[0]);
+            }
+
+            globalData = data.map(row => {
+                // Pathway column
+                const pathway = (row['Pathway'] || '').toUpperCase();
+                
+                // Status is numeric (10, 30, 40, 60, etc.)
+                const status = String(row['Status'] || '');
+                
+                // Use ONLY the date, ignore time completely
+                const createdOn = row['Created On '] || row['Created On'];
+                let createTime = parseDateTime(createdOn);
+                
+                // Set time to midnight to ignore time component
+                createTime.setHours(0, 0, 0, 0);
+                
+                // Calculate time elapsed in DAYS only (not hours)
+                const now = new Date();
+                now.setHours(0, 0, 0, 0); // Set to midnight for fair comparison
+                const daysElapsed = Math.floor((now - createTime) / (1000 * 60 * 60 * 24));
+                const hoursElapsed = daysElapsed * 24;
+                
+                // Determine SLA based on pathway
+                let sla = slaConfig[pathway] || 1;
+                
+                // Calculate SLA status
+                const slaStatus = calculateSLAStatus(daysElapsed, sla);
+                
+                // Normalize retailer names (group similar ones)
+                const rawRetailer = row['Consignee'] || '';
+                const retailer = normalizeRetailerName(rawRetailer);
+                
+                return {
+                    orderNumber: row['Order #'] || '',
+                    status: status,
+                    pathway: pathway,
+                    createTime: createTime,
+                    createTimeStr: formatDateTime(createTime),
+                    retailer: retailer,
+                    rawRetailer: rawRetailer, // Keep original for reference
+                    shipTo: row['Del. Addr 1'] || '',
+                    state: row['State'] || '',
+                    quantity: parseInt(row['Total Qty Ordered'] || row['Total Units ordered'] || 0),
+                    hoursElapsed: hoursElapsed,
+                    daysElapsed: daysElapsed,
+                    sla: sla,
+                    slaStatus: slaStatus,
+                    rawData: row
+                };
+            });
+
+            populateAllTables();
+            updateStats();
+        }
+
+        function parseDateTime(dateStr) {
+            if (!dateStr) return new Date();
+            
+            // If it's already a Date object
+            if (dateStr instanceof Date) {
+                return dateStr;
+            }
+            
+            // If it's an Excel date number (number between 1 and 50000)
+            if (typeof dateStr === 'number' && dateStr > 1 && dateStr < 100000) {
+                // Excel stores dates as days since 1/1/1900
+                const excelEpoch = new Date(1899, 11, 30);
+                const msPerDay = 86400000;
+                return new Date(excelEpoch.getTime() + (dateStr * msPerDay));
+            }
+            
+            // Try parsing as string
+            if (typeof dateStr === 'string') {
+                // Try ISO format first
+                let date = new Date(dateStr);
+                if (!isNaN(date.getTime())) {
+                    return date;
+                }
+                
+                // Try parsing common formats: MM/DD/YYYY, DD/MM/YYYY, etc.
+                const patterns = [
+                    /(\d{1,2})\/(\d{1,2})\/(\d{4})\s*(\d{1,2})?:?(\d{2})?\s*(AM|PM)?/i,
+                    /(\d{4})-(\d{2})-(\d{2})\s*(\d{2})?:?(\d{2})?/,
+                    /(\d{1,2})-(\d{1,2})-(\d{4})\s*(\d{1,2})?:?(\d{2})?\s*(AM|PM)?/i
+                ];
+                
+                for (let pattern of patterns) {
+                    const match = dateStr.match(pattern);
+                    if (match) {
+                        date = new Date(dateStr);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                }
+            }
+            
+            console.warn('Could not parse date:', dateStr);
+            return new Date();
+        }
+
+        function formatDateTime(date) {
+            if (!date || isNaN(date.getTime())) return 'N/A';
+            return date.toLocaleString('en-US', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function calculateHoursElapsed(createTime) {
+            if (!createTime || isNaN(createTime.getTime())) return 0;
+            const now = new Date();
+            const diffMs = now - createTime;
+            return Math.floor(diffMs / (1000 * 60 * 60));
+        }
+
+        function calculateSLAStatus(daysElapsed, sla) {
+            const threshold = sla * 0.8;
+            if (daysElapsed > sla) return 'overdue';
+            if (daysElapsed >= threshold) return 'at-risk';
+            return 'on-time';
+        }
+
+        function populateAllTables() {
+            populateTable('allTable', globalData, true);
+            populateTable('ecomTable', globalData.filter(o => o.pathway === 'ECOM'));
+            populateTable('bamTable', globalData.filter(o => o.pathway === 'BAM'));
+            populateTable('bam3Table', globalData.filter(o => o.pathway === 'BAM3'));
+            populateTable('kaTable', globalData.filter(o => o.pathway === 'KA'));
+            populateTable('ka3Table', globalData.filter(o => o.pathway === 'KA3'));
+            populateStatusView();
+            populateRetailerView();
+        }
+
+        function populateTable(tableId, data, includePathway = false) {
+            const tbody = document.getElementById(tableId);
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${includePathway ? 11 : 10}" class="no-data">No orders found.</td></tr>`;
+                return;
+            }
+
+            data.forEach(order => {
+                const row = document.createElement('tr');
+                row.classList.add('order-row');
+                if (order.slaStatus === 'overdue') {
+                    row.classList.add('overdue');
+                } else if (order.slaStatus === 'at-risk') {
+                    row.classList.add('at-risk');
+                }
+
+                const pathwayBadge = getPathwayBadge(order.pathway);
+                const timeDisplay = order.daysElapsed === 0 ? 'Today' : 
+                                   order.daysElapsed === 1 ? '1 day' :
+                                   `${order.daysElapsed} days`;
+
+                row.innerHTML = `
+                    <td><strong>${order.orderNumber}</strong></td>
+                    <td><span class="badge" style="background: #e6f2ff; color: #004085;">${order.status}</span></td>
+                    ${includePathway ? `<td>${pathwayBadge}</td>` : ''}
+                    <td>${order.createTimeStr}</td>
+                    <td>${order.retailer}</td>
+                    <td>${order.shipTo}</td>
+                    <td>${order.state}</td>
+                    <td>${order.quantity}</td>
+                    <td>${getSLAIndicator(order.slaStatus)}${timeDisplay}</td>
+                    <td>${order.sla < 1 ? `${order.sla * 24}h` : `${order.sla}d`}</td>
+                    <td>${getStatusBadge(order.slaStatus)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function populateStatusView() {
+            const container = document.getElementById('statusContainer');
+            container.innerHTML = '';
+
+            const statusGroups = {};
+            globalData.forEach(order => {
+                if (!statusGroups[order.status]) {
+                    statusGroups[order.status] = [];
+                }
+                statusGroups[order.status].push(order);
+            });
+
+            Object.keys(statusGroups).sort().forEach(statusCode => {
+                if (!statusCode) return;
+                
+                const orders = statusGroups[statusCode];
+                const onTime = orders.filter(o => o.slaStatus === 'on-time').length;
+                const atRisk = orders.filter(o => o.slaStatus === 'at-risk').length;
+                const overdue = orders.filter(o => o.slaStatus === 'overdue').length;
+                const totalQty = orders.reduce((sum, o) => sum + o.quantity, 0);
+
+                // Group by pathway within this status
+                const pathways = {};
+                orders.forEach(o => {
+                    if (!pathways[o.pathway]) pathways[o.pathway] = [];
+                    pathways[o.pathway].push(o);
+                });
+
+                const card = document.createElement('div');
+                card.classList.add('status-card');
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-name">Status: ${statusCode}</div>
+                        <div class="card-stats">
+                            <div class="card-stat">
+                                <span class="label">Total Orders</span>
+                                <span class="value">${orders.length}</span>
+                            </div>
+                            <div class="card-stat">
+                                <span class="label">Total Qty</span>
+                                <span class="value">${totalQty}</span>
+                            </div>
+                            <div class="card-stat">
+                                <span class="label">On Time</span>
+                                <span class="value" style="color: #38a169;">${onTime}</span>
+                            </div>
+                            <div class="card-stat">
+                                <span class="label">At Risk</span>
+                                <span class="value" style="color: #ed8936;">${atRisk}</span>
+                            </div>
+                            <div class="card-stat">
+                                <span class="label">Overdue</span>
+                                <span class="value" style="color: #e53e3e;">${overdue}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Breakdown by Pathway:</strong>
+                        ${Object.keys(pathways).map(pw => `
+                            ${getPathwayBadge(pw)} ${pathways[pw].length} orders
+                        `).join(' | ')}
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Pathway</th>
+                                    <th>Create Time</th>
+                                    <th>Retailer</th>
+                                    <th>Ship To</th>
+                                    <th>State</th>
+                                    <th>Qty</th>
+                                    <th>Time</th>
+                                    <th>SLA</th>
+                                    <th>SLA Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${orders.map(order => {
+                                    const rowClass = order.slaStatus === 'overdue' ? 'order-row overdue' : 
+                                                    order.slaStatus === 'at-risk' ? 'order-row at-risk' : '';
+                                    const timeDisplay = order.daysElapsed === 0 ? 'Today' : 
+                                                       order.daysElapsed === 1 ? '1 day' :
+                                                       `${order.daysElapsed} days`;
+                                    return `
+                                        <tr class="${rowClass}">
+                                            <td><strong>${order.orderNumber}</strong></td>
+                                            <td>${getPathwayBadge(order.pathway)}</td>
+                                            <td>${order.createTimeStr}</td>
+                                            <td>${order.retailer}</td>
+                                            <td>${order.shipTo}</td>
+                                            <td>${order.state}</td>
+                                            <td>${order.quantity}</td>
+                                            <td>${getSLAIndicator(order.slaStatus)}${timeDisplay}</td>
+                                            <td>${order.sla < 1 ? `${order.sla * 24}h` : `${order.sla}d`}</td>
+                                            <td>${getStatusBadge(order.slaStatus)}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function populateRetailerView() {
+            const container = document.getElementById('retailersContainer');
+            container.innerHTML = '';
+
+            const retailers = {};
+            globalData.forEach(order => {
+                if (!retailers[order.retailer]) {
+                    retailers[order.retailer] = [];
+                }
+                retailers[order.retailer].push(order);
+            });
+
+            Object.keys(retailers).sort().forEach(retailerName => {
+                if (!retailerName) return;
+                
+                const orders = retailers[retailerName];
+                const onTime = orders.filter(o => o.slaStatus === 'on-time').length;
+                const atRisk = orders.filter(o => o.slaStatus === 'at-risk').length;
+                const overdue = orders.filter(o => o.slaStatus === 'overdue').length;
+                const totalQty = orders.reduce((sum, o) => sum + o.quantity, 0);
+
+                const card = document.createElement('div');
+                card.classList.add('retailer-card');
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-name">${retailerName}</div>
+                        <div class="card-stats">
+                            <div class="card-stat">
+                                <span class="label">Total Orders</span>
+                                <span class="value">${orders.length}</span>
+                            </div>
+                            <div class="card-stat">
+                                <span class="label">Total Qty</span>
+                                <span class="value">${totalQty}</span>
+                            </div>
+                            <div class="card-stat">
+                                <span class="label">On Time</span>
+                                <span class="value" style="color: #38a169;">${onTime}</span>
+                            </div>
+                            <div class="card-stat">
+                                <span class="label">At Risk</span>
+                                <span class="value" style="color: #ed8936;">${atRisk}</span>
+                            </div>
+                            <div class="card-stat">
+                                <span class="label">Overdue</span>
+                                <span class="value" style="color: #e53e3e;">${overdue}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Status</th>
+                                    <th>Pathway</th>
+                                    <th>Create Time</th>
+                                    <th>Ship To</th>
+                                    <th>State</th>
+                                    <th>Qty</th>
+                                    <th>Time</th>
+                                    <th>SLA</th>
+                                    <th>SLA Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${orders.map(order => {
+                                    const rowClass = order.slaStatus === 'overdue' ? 'order-row overdue' : 
+                                                    order.slaStatus === 'at-risk' ? 'order-row at-risk' : '';
+                                    const timeDisplay = order.daysElapsed === 0 ? 'Today' : 
+                                                       order.daysElapsed === 1 ? '1 day' :
+                                                       `${order.daysElapsed} days`;
+                                    return `
+                                        <tr class="${rowClass}">
+                                            <td><strong>${order.orderNumber}</strong></td>
+                                            <td><span class="badge" style="background: #e6f2ff; color: #004085;">${order.status}</span></td>
+                                            <td>${getPathwayBadge(order.pathway)}</td>
+                                            <td>${order.createTimeStr}</td>
+                                            <td>${order.shipTo}</td>
+                                            <td>${order.state}</td>
+                                            <td>${order.quantity}</td>
+                                            <td>${getSLAIndicator(order.slaStatus)}${timeDisplay}</td>
+                                            <td>${order.sla < 1 ? `${order.sla * 24}h` : `${order.sla}d`}</td>
+                                            <td>${getStatusBadge(order.slaStatus)}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getPathwayBadge(pathway) {
+            const badges = {
+                'ECOM': '<span class="pathway-badge ecom">🚀 ECOM</span>',
+                'BAM': '<span class="pathway-badge bam">📦 BAM</span>',
+                'BAM3': '<span class="pathway-badge bam">📦 BAM3</span>',
+                'KA': '<span class="pathway-badge ka">⚡ KA</span>',
+                'KA3': '<span class="pathway-badge ka">⚡ KA3</span>'
+            };
+            return badges[pathway] || `<span class="pathway-badge">${pathway}</span>`;
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'on-time': '<span class="badge on-time">✓ On Time</span>',
+                'at-risk': '<span class="badge at-risk">⚠ At Risk</span>',
+                'overdue': '<span class="badge overdue">🔴 Overdue</span>'
+            };
+            return badges[status] || '';
+        }
+
+        function getSLAIndicator(status) {
+            const colors = {
+                'on-time': 'green',
+                'at-risk': 'yellow',
+                'overdue': 'red'
+            };
+            return `<span class="sla-indicator ${colors[status]}"></span>`;
+        }
+
+        function updateStats() {
+            document.getElementById('totalOrders').textContent = globalData.length;
+            document.getElementById('onTimeOrders').textContent = globalData.filter(o => o.slaStatus === 'on-time').length;
+            document.getElementById('atRiskOrders').textContent = globalData.filter(o => o.slaStatus === 'at-risk').length;
+            document.getElementById('overdueOrders').textContent = globalData.filter(o => o.slaStatus === 'overdue').length;
+            document.getElementById('totalQuantity').textContent = globalData.reduce((sum, o) => sum + o.quantity, 0);
+        }
+
+        function recalculateSLA() {
+            slaConfig['ECOM'] = parseFloat(document.getElementById('slaEcom').value);
+            slaConfig['BAM'] = parseFloat(document.getElementById('slaBam').value);
+            slaConfig['BAM3'] = parseFloat(document.getElementById('slaBam3').value);
+            slaConfig['KA'] = parseFloat(document.getElementById('slaKa').value);
+            slaConfig['KA3'] = parseFloat(document.getElementById('slaKa3').value);
+            
+            if (globalData.length > 0) {
+                processData(globalData.map(o => o.rawData));
+                alert('SLA configuration updated and dashboard refreshed!');
+            }
+        }
+
+        function filterTable(pathway) {
+            const searchId = `search${pathway.charAt(0).toUpperCase() + pathway.slice(1)}`;
+            const statusId = `statusFilter${pathway.charAt(0).toUpperCase() + pathway.slice(1)}`;
+            const pathwayFilterId = pathway === 'all' ? 'pathwayFilterAll' : null;
+            
+            const searchTerm = document.getElementById(searchId)?.value.toLowerCase() || '';
+            const statusFilter = document.getElementById(statusId)?.value || '';
+            const pathwayFilter = pathwayFilterId ? document.getElementById(pathwayFilterId)?.value || '' : '';
+            
+            let filteredData = globalData;
+            
+            // Filter by pathway tab
+            if (pathway !== 'all') {
+                filteredData = filteredData.filter(o => o.pathway === pathway.toUpperCase());
+            }
+            
+            // Filter by pathway dropdown (only on all tab)
+            if (pathwayFilter) {
+                filteredData = filteredData.filter(o => o.pathway === pathwayFilter);
+            }
+            
+            // Filter by search term
+            if (searchTerm) {
+                filteredData = filteredData.filter(o => 
+                    o.orderNumber.toLowerCase().includes(searchTerm) ||
+                    o.retailer.toLowerCase().includes(searchTerm) ||
+                    o.shipTo.toLowerCase().includes(searchTerm) ||
+                    o.state.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Filter by SLA status
+            if (statusFilter) {
+                filteredData = filteredData.filter(o => o.slaStatus === statusFilter);
+            }
+            
+            const tableId = `${pathway}Table`;
+            populateTable(tableId, filteredData, pathway === 'all');
+        }
+
+        function filterStatusGroups() {
+            const searchTerm = document.getElementById('searchStatus').value.toLowerCase();
+            const cards = document.querySelectorAll('.status-card');
+            
+            cards.forEach(card => {
+                const statusName = card.querySelector('.card-name').textContent.toLowerCase();
+                card.style.display = statusName.includes(searchTerm) ? 'block' : 'none';
+            });
+        }
+
+        function filterRetailers() {
+            const searchTerm = document.getElementById('searchRetailer').value.toLowerCase();
+            const cards = document.querySelectorAll('.retailer-card');
+            
+            cards.forEach(card => {
+                const retailerName = card.querySelector('.card-name').textContent.toLowerCase();
+                card.style.display = retailerName.includes(searchTerm) ? 'block' : 'none';
+            });
+        }
+
+        function exportToCSV(pathway) {
+            let data = globalData;
+            
+            if (pathway !== 'all') {
+                data = data.filter(o => o.pathway === pathway.toUpperCase());
+            }
+            
+            const csvContent = [
+                ['Order Number', 'Status', 'Pathway', 'Create Time', 'Retailer', 'Ship To', 'State', 'Quantity', 'Hours Elapsed', 'SLA Days', 'SLA Status'],
+                ...data.map(o => [
+                    o.orderNumber, o.status, o.pathway, o.createTimeStr, o.retailer, o.shipTo, 
+                    o.state, o.quantity, o.hoursElapsed, o.sla, o.slaStatus
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `orders_${pathway}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
